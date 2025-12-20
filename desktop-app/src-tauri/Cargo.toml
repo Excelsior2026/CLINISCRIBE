@@ -1,0 +1,29 @@
+[package]
+name = "cliniscribe-desktop"
+version = "1.0.0"
+description = "CliniScribe Desktop App"
+authors = ["CliniScribe Team"]
+license = ""
+repository = ""
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+tauri-build = { version = "1.5.1", features = [] }
+
+[dependencies]
+tauri = { version = "1.5.4", features = ["dialog-all", "fs-all", "http-all", "notification-all", "path-all", "shell-sidecar", "updater"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.35", features = ["full"] }
+reqwest = { version = "0.11", features = ["json", "stream"] }
+futures = "0.3"
+anyhow = "1.0"
+thiserror = "1.0"
+dirs = "5.0"
+
+[features]
+# This feature is used for production builds or when `devPath` points to the filesystem
+# DO NOT REMOVE!!
+custom-protocol = ["tauri/custom-protocol"]
