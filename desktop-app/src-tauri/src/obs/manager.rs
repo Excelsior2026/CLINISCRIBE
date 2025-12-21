@@ -236,3 +236,80 @@ impl Default for OBSManager {
         Self::new()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_obs_manager_creation() {
+        let manager = OBSManager::new();
+        assert_eq!(manager.connected, false);
+        assert_eq!(manager.recording, false);
+        assert!(manager.client.is_none());
+    }
+
+    #[test]
+    fn test_is_connected_initially_false() {
+        let manager = OBSManager::new();
+        assert_eq!(manager.is_connected(), false);
+    }
+
+    #[test]
+    fn test_default_constructor() {
+        let manager = OBSManager::default();
+        assert_eq!(manager.connected, false);
+        assert_eq!(manager.recording, false);
+    }
+
+    #[test]
+    fn test_filter_presets_available() {
+        let presets = OBSManager::get_filter_presets();
+        assert_eq!(presets.len(), 3);
+
+        // Check preset names
+        let names: Vec<&str> = presets.iter().map(|p| p.name.as_str()).collect();
+        assert!(names.contains(&"Lecture Hall"));
+        assert!(names.contains(&"Clinical Skills Center"));
+        assert!(names.contains(&"Online Lecture"));
+    }
+
+    #[test]
+    fn test_filter_preset_structure() {
+        let presets = OBSManager::get_filter_presets();
+
+        for preset in presets {
+            assert!(!preset.name.is_empty());
+            assert!(!preset.description.is_empty());
+            assert!(!preset.filters.is_empty());
+
+            // Verify each filter has required fields
+            for filter in preset.filters {
+                assert!(!filter.filter_type.is_empty());
+                assert!(!filter.settings.is_null());
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn test_disconnect_without_connection() {
+        let mut manager = OBSManager::new();
+
+        // Should not panic when disconnecting without being connected
+        let result = manager.disconnect().await;
+        assert!(result.is_ok());
+        assert_eq!(manager.connected, false);
+    }
+
+    #[tokio::test]
+    async fn test_operations_without_connection_fail() {
+        let manager = OBSManager::new();
+
+        // All operations should fail when not connected
+        let sources_result = manager.get_audio_sources().await;
+        assert!(sources_result.is_err());
+
+        let status_result = manager.get_recording_status().await;
+        assert!(status_result.is_err());
+    }
+}
