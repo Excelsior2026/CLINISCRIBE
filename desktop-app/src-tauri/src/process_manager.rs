@@ -212,3 +212,43 @@ impl Drop for ProcessManager {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_process_manager_creation() {
+        let manager = ProcessManager::new();
+        assert!(manager.ollama_process.is_none());
+        assert!(manager.api_process.is_none());
+    }
+
+    #[test]
+    fn test_service_status_default() {
+        let manager = ProcessManager::new();
+        let status = manager.get_status();
+
+        assert_eq!(status.ollama_running, false);
+        assert_eq!(status.api_running, false);
+        assert_eq!(status.whisper_loaded, false);
+    }
+
+    #[test]
+    fn test_service_status_serialization() {
+        let status = ServiceStatus {
+            ollama_running: true,
+            api_running: true,
+            whisper_loaded: true,
+        };
+
+        let json = serde_json::to_string(&status).unwrap();
+        assert!(json.contains("ollama_running"));
+        assert!(json.contains("true"));
+
+        let deserialized: ServiceStatus = serde_json::from_str(&json).unwrap();
+        assert_eq!(deserialized.ollama_running, true);
+        assert_eq!(deserialized.api_running, true);
+        assert_eq!(deserialized.whisper_loaded, true);
+    }
+}
