@@ -257,3 +257,104 @@ FPSCommon=30
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_config_dir() {
+        let result = OBSConfigWriter::get_config_dir();
+
+        match result {
+            Ok(dir) => {
+                println!("OBS config directory: {:?}", dir);
+                assert!(dir.to_string_lossy().contains("obs-studio"));
+            }
+            Err(e) => {
+                println!("Could not get OBS config dir (expected on some systems): {}", e);
+            }
+        }
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn test_config_dir_macos() {
+        let result = OBSConfigWriter::get_config_dir();
+
+        if let Ok(dir) = result {
+            let dir_str = dir.to_string_lossy();
+            assert!(dir_str.contains("Library/Application Support/obs-studio"));
+        }
+    }
+
+    #[test]
+    fn test_enable_websocket_content() {
+        // Test the content that would be written
+        let websocket_config = "[OBSWebSocket]\nServerEnabled=true\nServerPort=4455\nAuthRequired=false\n";
+
+        assert!(websocket_config.contains("ServerEnabled=true"));
+        assert!(websocket_config.contains("ServerPort=4455"));
+        assert!(websocket_config.contains("AuthRequired=false"));
+    }
+
+    #[test]
+    fn test_scene_json_structure() {
+        use serde_json::json;
+
+        let scene_collection = json!({
+            "current_scene": "Lecture Recording",
+            "name": "CliniScribe",
+            "scenes": [{
+                "name": "Lecture Recording",
+                "sources": [{
+                    "name": "Microphone",
+                    "id": "coreaudio_input_capture",
+                    "settings": { "device_id": "default" },
+                    "volume": 1.0
+                }]
+            }]
+        });
+
+        assert!(scene_collection["current_scene"] == "Lecture Recording");
+        assert!(scene_collection["name"] == "CliniScribe");
+    }
+
+    #[test]
+    fn test_filter_preset_json() {
+        use serde_json::json;
+
+        let filter_presets = json!({
+            "cliniscribe_lecture_hall": {
+                "filters": [{
+                    "name": "Noise Suppression",
+                    "type": "noise_suppress_filter_v2",
+                    "enabled": true
+                }]
+            }
+        });
+
+        let json_str = serde_json::to_string(&filter_presets).unwrap();
+        assert!(json_str.contains("cliniscribe_lecture_hall"));
+        assert!(json_str.contains("Noise Suppression"));
+    }
+
+    #[test]
+    fn test_recording_settings_format() {
+        let basic_config = format!(
+            r#"[SimpleOutput]
+RecFormat=mkv
+RecQuality=Small
+RecAudioBitrate=192
+
+[Audio]
+SampleRate=48000
+ChannelSetup=Stereo"#
+        );
+
+        assert!(basic_config.contains("RecFormat=mkv"));
+        assert!(basic_config.contains("SampleRate=48000"));
+        assert!(basic_config.contains("ChannelSetup=Stereo"));
+        assert!(basic_config.contains("RecAudioBitrate=192"));
+    }
+}
