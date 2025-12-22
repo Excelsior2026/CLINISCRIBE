@@ -63,3 +63,22 @@ async def shutdown_event():
     if cleanup_task:
         cleanup_task.cancel()
     logger.info("Application shutting down")
+
+
+if __name__ == "__main__":
+    import uvicorn
+    import os
+
+    # Get configuration from environment variables
+    port = int(os.getenv("PORT", 8080))
+    host = os.getenv("HOST", "0.0.0.0")
+    log_level = os.getenv("LOG_LEVEL", "info").lower()
+
+    # Run the server
+    uvicorn.run(
+        app,
+        host=host,
+        port=port,
+        log_level=log_level,
+        access_log=True
+    )
