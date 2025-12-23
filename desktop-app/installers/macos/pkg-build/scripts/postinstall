@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Post-installation script for CliniScribe
-APP_PATH="/Applications/CliniScribe.app"
-BUNDLED_DIR="/Library/Application Support/CliniScribe/BundledModels"
+# Post-installation script for CogniScribe
+APP_PATH="/Applications/CogniScribe.app"
+BUNDLED_DIR="/Library/Application Support/CogniScribe/BundledModels"
 USER_HOME=$(eval echo ~$SUDO_USER)
 
-echo "Running CliniScribe post-installation..."
+echo "Running CogniScribe post-installation..."
 
 # Set proper permissions
 chmod -R 755 "$APP_PATH"
@@ -15,8 +15,8 @@ chown -R root:wheel "$APP_PATH"
 xattr -cr "$APP_PATH" 2>/dev/null || true
 
 # Create application support directory
-mkdir -p "$USER_HOME/Library/Application Support/com.cliniscribe.app"
-chown -R $SUDO_USER:staff "$USER_HOME/Library/Application Support/com.cliniscribe.app"
+mkdir -p "$USER_HOME/Library/Application Support/com.bageltech.cogniscribe"
+chown -R $SUDO_USER:staff "$USER_HOME/Library/Application Support/com.bageltech.cogniscribe"
 
 # Install bundled models if available
 if [ -d "$BUNDLED_DIR" ]; then
@@ -44,8 +44,8 @@ if [ -d "$BUNDLED_DIR" ]; then
 
     # Create marker file to indicate bundled models were installed
     echo '{"bundled_models_installed": true, "install_date": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'"}' > \
-         "$USER_HOME/Library/Application Support/com.cliniscribe.app/.models-installed"
-    chown $SUDO_USER:staff "$USER_HOME/Library/Application Support/com.cliniscribe.app/.models-installed"
+         "$USER_HOME/Library/Application Support/com.bageltech.cogniscribe/.models-installed"
+    chown $SUDO_USER:staff "$USER_HOME/Library/Application Support/com.bageltech.cogniscribe/.models-installed"
 
     echo "✓ Bundled models installed successfully"
     echo "  Models are ready for offline use!"
@@ -53,8 +53,8 @@ else
     echo "No bundled models found - models will download on first run"
 fi
 
-echo "CliniScribe installation complete!"
-echo "You can find CliniScribe in your Applications folder."
+echo "CogniScribe installation complete!"
+echo "You can find CogniScribe in your Applications folder."
 
 # Optional: Open app automatically
 # open -a "$APP_PATH"
