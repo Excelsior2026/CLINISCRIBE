@@ -10,6 +10,12 @@ TEMP_AUDIO_DIR = os.environ.get("TEMP_AUDIO_DIR", "temp_processed")
 MAX_FILE_SIZE_MB = int(os.environ.get("MAX_FILE_SIZE_MB", "1000"))
 ALLOWED_AUDIO_FORMATS = [".wav", ".mp3", ".m4a", ".flac", ".ogg", ".aac", ".wma", ".webm", ".mp4", ".mkv"]
 
+# DeepFilterNet (optional offline enhancement)
+DEEPFILTERNET_ENABLED = os.environ.get("DEEPFILTERNET_ENABLED", "false").lower() in ("true", "1", "yes")
+DEEPFILTERNET_BIN = os.environ.get("DEEPFILTERNET_BIN", "deep-filter")
+DEEPFILTERNET_MODEL = os.environ.get("DEEPFILTERNET_MODEL", "").strip()
+DEEPFILTERNET_USE_POSTFILTER = os.environ.get("DEEPFILTERNET_USE_POSTFILTER", "true").lower() in ("true", "1", "yes")
+
 # Whisper model settings
 WHISPER_MODEL: Literal["tiny", "base", "small", "medium", "large-v3"] = os.environ.get(
     "WHISPER_MODEL", "base"

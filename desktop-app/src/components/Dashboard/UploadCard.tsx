@@ -28,6 +28,7 @@ function UploadCard({ onResult, onUploadStart, onError, isProcessing }: UploadCa
   const [subject, setSubject] = useState('');
   const [ratio, setRatio] = useState(0.15);
   const [quizSource, setQuizSource] = useState<'subject' | 'lecture'>('subject');
+  const [enhanceAudio, setEnhanceAudio] = useState(true);
   const [error, setError] = useState('');
 
   const handleFileSelect = async () => {
@@ -67,6 +68,7 @@ function UploadCard({ onResult, onUploadStart, onError, isProcessing }: UploadCa
       const response = await fetch('http://localhost:8080/api/pipeline?' + new URLSearchParams({
         ratio: ratio.toString(),
         ...(subject && { subject }),
+        ...(enhanceAudio ? { enhance: 'true' } : {}),
       }), {
         method: 'POST',
         body: await createFilePayload(filePath),
@@ -307,6 +309,26 @@ function UploadCard({ onResult, onUploadStart, onError, isProcessing }: UploadCa
             <span>Balanced</span>
             <span>Thorough</span>
           </div>
+        </div>
+
+        {/* Enhancement Toggle */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            ✨ Studio Enhancement
+          </label>
+          <label className="flex items-center gap-3 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              checked={enhanceAudio}
+              onChange={(e) => setEnhanceAudio(e.target.checked)}
+              disabled={isProcessing}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+            <span>DeepFilterNet offline enhancement (auto-fallback)</span>
+          </label>
+          <p className="text-xs text-gray-500 mt-1">
+            Improves clarity before transcription; skips automatically if DeepFilterNet isn&apos;t available.
+          </p>
         </div>
       </div>
 

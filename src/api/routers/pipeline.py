@@ -5,7 +5,12 @@ from typing import Optional
 from fastapi import APIRouter, UploadFile, File, HTTPException, Query
 from fastapi.responses import JSONResponse
 from src.api.services import audio_preprocess, transcriber, summarizer
-from src.utils.settings import AUDIO_STORAGE_DIR, MAX_FILE_SIZE_MB, ALLOWED_AUDIO_FORMATS
+from src.utils.settings import (
+    AUDIO_STORAGE_DIR,
+    MAX_FILE_SIZE_MB,
+    ALLOWED_AUDIO_FORMATS,
+    DEEPFILTERNET_ENABLED,
+)
 from src.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
@@ -39,18 +44,22 @@ def validate_audio_file(file: UploadFile) -> None:
 async def pipeline(
     file: UploadFile = File(..., description="Audio file to transcribe"),
     ratio: float = Query(0.15, ge=0.05, le=1.0, description="Summary length ratio (0.05-1.0)"),
-    subject: Optional[str] = Query(None, description="Optional subject/topic (e.g., 'anatomy', 'pharmacology')")
+    subject: Optional[str] = Query(None, description="Optional subject/topic (e.g., 'anatomy', 'pharmacology')"),
+    enhance: Optional[bool] = Query(
+        None,
+        description="Enable DeepFilterNet enhancement if available (defaults to server setting).",
+    ),
 ):
     """
     Process audio file through complete pipeline:
     1. Upload and validate
-    2. Preprocess (noise reduction, normalization)
+    2. Preprocess (noise reduction, normalization, optional enhancement)
     3. Transcribe with Whisper
     4. Generate structured summary with Ollama
     
     Returns transcription and formatted study notes.
     """
-    logger.info(f"Pipeline request: {file.filename} (ratio={ratio}, subject={subject})")
+    logger.info(f"Pipeline request: {file.filename} (ratio={ratio}, subject={subject}, enhance={enhance})")
     
     raw_path = None
     clean_path = None
@@ -89,7 +98,11 @@ async def pipeline(
         
         # Stage 1: Preprocess audio
         logger.info("Stage 1/3: Preprocessing audio...")
-        clean_path = audio_preprocess.preprocess_audio(raw_path)
+        use_deepfilter = DEEPFILTERNET_ENABLED if enhance is None else enhance
+        clean_path, preprocess_meta = audio_preprocess.preprocess_audio(
+            raw_path,
+            use_deepfilter=use_deepfilter,
+        )
         
         # Stage 2: Transcribe
         logger.info("Stage 2/3: Transcribing audio...")
@@ -118,7 +131,9 @@ async def pipeline(
                 "language": transcript["language"],
                 "segments": len(transcript["segments"]),
                 "ratio": ratio,
-                "subject": subject
+                "subject": subject,
+                "enhanced": preprocess_meta["enhanced"],
+                "enhancer": preprocess_meta["enhancer"],
             }
         }
         

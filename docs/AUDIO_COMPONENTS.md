@@ -18,6 +18,9 @@ Goal: ship studio-grade recording without a second app, using best-of-breed open
 ### Noise Suppression
 - RNNoise (C, BSD-style)  
   High-quality noise suppression used widely in VOIP and streaming.
+- DeepFilterNet (Rust/C++, Apache-2.0 OR MIT)  
+  Deep-learning noise suppression/dereverb for full-band 48 kHz audio; higher CPU cost but
+  excellent quality. Best as an optional “studio” mode or offline enhancement pass.
 
 ### Echo Cancellation + AGC + NS
 - WebRTC APM (C++, BSD)  
@@ -39,6 +42,8 @@ Goal: ship studio-grade recording without a second app, using best-of-breed open
 
 ## Notes
 - RNNoise and WebRTC APM are the primary targets for “studio” quality.
+- DeepFilterNet expects 48 kHz input and uses model weights; we’ll need resampling and a
+  model packaging strategy if we embed it.
 - APM expects fixed frame sizes (10 ms) and often 48 kHz; we may resample
   upstream to maintain consistent processing quality.
 - Phase 1 focuses on clean, stable capture + WAV output so the backend

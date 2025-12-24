@@ -15,6 +15,7 @@ function RecordCard({ onUploadStart, onResult, onError, isProcessing }: RecordCa
   const [subject, setSubject] = useState<string>('');
   const [quizSource, setQuizSource] = useState<'subject' | 'lecture'>('lecture');
   const [ratio, setRatio] = useState<number>(0.15);
+  const [enhanceAudio, setEnhanceAudio] = useState(true);
 
   const {
     isRecording,
@@ -91,6 +92,7 @@ function RecordCard({ onUploadStart, onResult, onError, isProcessing }: RecordCa
           new URLSearchParams({
             ratio: ratio.toString(),
             ...(subject && { subject }),
+            ...(enhanceAudio ? { enhance: 'true' } : {}),
           }),
         {
           method: 'POST',
@@ -315,6 +317,26 @@ function RecordCard({ onUploadStart, onResult, onError, isProcessing }: RecordCa
             <span>Very Brief</span>
             <span>Comprehensive</span>
           </div>
+        </div>
+
+        {/* Enhancement Toggle */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Studio Enhancement
+          </label>
+          <label className="flex items-center gap-3 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              checked={enhanceAudio}
+              onChange={(e) => setEnhanceAudio(e.target.checked)}
+              disabled={isProcessing || isRecording}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+            <span>DeepFilterNet offline enhancement (auto-fallback)</span>
+          </label>
+          <p className="text-xs text-gray-500 mt-1">
+            Improves clarity after recording; skips automatically if DeepFilterNet isn&apos;t available.
+          </p>
         </div>
       </div>
 
